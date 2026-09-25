@@ -11,6 +11,9 @@ const MIN = 60_000;
 
 function setup() {
   const home = mkdtempSync(join(tmpdir(), 'smoke-signal-hub-'));
+  // A 'ble' hub saves device letters via saveConfig(), which writes to SMOKE_SIGNAL_HOME, not
+  // dataDir. Without this the tests overwrite the user's real ~/.smoke-signal/config.json.
+  process.env.SMOKE_SIGNAL_HOME = home;
   let now = Date.UTC(2026, 8, 26, 12, 0, 0);
   const clock: Clock = { now: () => now, speed: 1 };
   const source: DeviceSource = { kind: 'ble', start: async () => {}, stop: async () => {} };
