@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "smoke-signal": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["bin/smoke-signal.mjs", "mcp", "--channel"]
+    }
+  }
+}

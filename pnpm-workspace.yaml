@@ -1,0 +1,7 @@
+# Native addons ship prebuilt N-API binaries (macOS universal, Linux, Windows),
+# so their compile-on-install scripts are not needed. Skipping them means no Xcode required.
+allowBuilds:
+  '@serialport/bindings-cpp': false
+  '@stoprocent/bluetooth-hci-socket': false
+  '@stoprocent/noble': false
+  usb: false

@@ -1,41 +1,37 @@
 {
-	"name": "template",
-	"source": "src/index.html",
-	"version": "0.1.0",
-	"description": "SASS compile|autoprefix|minimize and live-reload dev server using Browsersync for static HTML",
-	"author": "Tys",
-	"Id": 1,
-	"//first_comment": "THIS IS JUST A TEMPLATE",
-	"//second_comment": "MAKE SURE ANY EXTRA FONTS ARE LINKED THE SAME WAY AS THEY WILL BE FOUND IN PUBLIC FOLDER IE. IN ASSETS/FONTS/'your extra fonts'",
-	"scripts": {
-		"build:sass": "sass  --no-source-map src/sass/main.scss public/css/style.css",
-		"build": "npm-run-all copy:html build:*",
-		"postbuild": "postcss public/css/*.css -u autoprefixer cssnano -r --no-map",
-		"copy:assets": "copyfiles -u 1 ./src/assets/**/**/* public",
-		"copy:html": "copyfiles -u 1 ./src/*.html public",
-		"copy:script": "copyfiles -u 1 ./src/*.js public",
-		"copy": "npm-run-all --parallel copy:*",
-		"watch:assets": "onchange './src/assets/**/*' -- npm run copy:html",
-		"watch:html": "onchange 'src/*.html' -- npm run copy:html",
-		"watch:script": "onchange 'src/*.js' -- npm run copy:script",
-		"watch:sass": "sass  --no-source-map --watch src/sass/main.scss public/css/style.css",
-		"parcel": "parcel public/index.html",
-		"parcelbuild": "parcel build public/index.html",
-		"watch": "npm-run-all --parallel watch:*",
-		"start": "npm-run-all copy --parallel watch parcel"
-	},
-	"dependencies": {
-		"autoprefixer": "^10.4.2",
-		"copyfiles": "^2.4.1",
-		"cssnano": "^5.0.17",
-		"html-to-image": "^1.9.0",
-		"npm-run-all": "^4.1.5",
-		"onchange": "^7.1.0",
-		"postcss-cli": "^9.1.0",
-		"sass": "^1.49.8"
-	},
-	"devDependencies": {
-		"parcel": "^2.6.0",
-		"process": "^0.11.10"
-	}
+  "name": "smoke-signal",
+  "version": "0.1.0",
+  "description": "Bluetooth BBQ thermometer hub that lets Claude babysit your smoker (Inkbird INT-12-BW + iBBQ family).",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "packageManager": "pnpm@12.6.0",
+  "scripts": {
+    "start": "node bin/smoke-signal.mjs hub",
+    "sim": "node bin/smoke-signal.mjs hub --sim",
+    "demo": "node bin/smoke-signal.mjs hub --sim --speed 60 --start-hours 5",
+    "scan": "node bin/smoke-signal.mjs scan",
+    "explore": "node bin/smoke-signal.mjs explore",
+    "status": "node bin/smoke-signal.mjs status",
+    "mcp": "node bin/smoke-signal.mjs mcp",
+    "configure": "node bin/smoke-signal.mjs configure",
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm typecheck && pnpm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.1",
+    "@stoprocent/noble": "^2.8.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.3"
+  },
+  "bin": {
+    "smoke-signal": "bin/smoke-signal.mjs"
+  }
 }

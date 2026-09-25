@@ -1,0 +1,15 @@
+{
+  "enabledMcpjsonServers": ["smoke-signal"],
+  "permissions": {
+    "allow": [
+      "mcp__smoke-signal",
+      "CronCreate",
+      "CronList",
+      "CronDelete",
+      "Bash(pnpm status)",
+      "Bash(pnpm check)",
+      "Bash(pnpm test)",
+      "Bash(pnpm typecheck)"
+    ]
+  }
+}

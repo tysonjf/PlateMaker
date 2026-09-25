@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Smoke Signal</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <div class="brand">
+          <h1>Smoke Signal</h1>
+          <p class="cook-line" id="cook-line">Connecting to the hub…</p>
+        </div>
+        <div class="top-actions">
+          <span class="chip" id="mode-chip" hidden></span>
+          <span class="chip" id="claude-chip" title="When Claude last asked for a cook report">Claude: not connected</span>
+          <div class="seg" role="group" aria-label="Temperature unit">
+            <button type="button" data-unit="F">°F</button>
+            <button type="button" data-unit="C">°C</button>
+          </div>
+        </div>
+      </header>
+
+      <section id="alerts" class="alerts" aria-live="polite"></section>
+
+      <section id="tiles" class="tiles" aria-label="Current temperatures"></section>
+
+      <div class="filters" role="group" aria-label="Chart time range">
+        <button type="button" data-range="60">1h</button>
+        <button type="button" data-range="180">3h</button>
+        <button type="button" data-range="360">6h</button>
+        <button type="button" data-range="720">12h</button>
+        <button type="button" data-range="all">Whole cook</button>
+        <span class="spacer"></span>
+        <button type="button" id="table-toggle" aria-pressed="false">Table view</button>
+      </div>
+
+      <section class="card chart-card">
+        <div class="chart-head">
+          <h2>Temperatures</h2>
+          <ul class="legend" id="legend"></ul>
+        </div>
+        <div class="chart" id="chart" tabindex="0" aria-label="Temperature chart. Use left and right arrow keys to read values.">
+          <div class="tooltip" id="tooltip" hidden></div>
+        </div>
+        <div id="table-wrap" class="table-wrap" hidden></div>
+      </section>
+
+      <div class="columns">
+        <section class="card">
+          <h2>Cook log</h2>
+          <form id="note-form" class="note-form">
+            <input id="note-text" type="text" maxlength="300" placeholder="Log something: wrapped, spritzed, added fuel…" aria-label="Note" />
+            <button type="submit">Add</button>
+          </form>
+          <ol class="events" id="events"></ol>
+        </section>
+
+        <div class="stack">
+          <section class="card">
+            <h2>Cook setup</h2>
+            <form id="setup-form" class="setup"></form>
+            <p class="hint" id="setup-hint"></p>
+          </section>
+          <section class="card">
+            <h2>Thermometers</h2>
+            <ul class="devices" id="devices"></ul>
+          </section>
+        </div>
+      </div>
+      <footer class="foot">Readings are recorded on this Mac by the Smoke Signal hub. Claude reads them through the smoke-signal MCP server.</footer>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
