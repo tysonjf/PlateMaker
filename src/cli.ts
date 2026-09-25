@@ -2,6 +2,7 @@
 // Smoke Signal command line: `node src/cli.ts <command>` (see `pnpm run` for shortcuts).
 
 import { spawn } from 'node:child_process';
+import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { networkInterfaces } from 'node:os';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -66,6 +67,14 @@ function lanAddresses(): string[] {
     .map((i) => i!.address);
 }
 
+/** Simulator runs create a cook each time; keep only the most recent few. */
+function pruneOldCooks(dir: string, keep: number): void {
+  const root = join(dir, 'cooks');
+  if (!existsSync(root)) return;
+  const old = readdirSync(root).sort().slice(0, -keep);
+  for (const name of old) rmSync(join(root, name), { recursive: true, force: true });
+}
+
 async function alreadyRunning(url: string): Promise<boolean> {
   try {
     const res = await fetch(`${url}/api/status`, { signal: AbortSignal.timeout(1500) });
@@ -98,7 +107,9 @@ async function runHub(): Promise<void> {
     const clock = speed > 1 ? acceleratedClock(speed) : realClock;
     cfg = { ...structuredClone(cfg), devices: {}, onlyDevices: [] };
     const source = new SimSource(clock, { startHours: num(values['start-hours'], 0) });
-    hub = new Hub({ cfg, source, clock, dataDir: join(dataDir(), 'sim'), freshCook: true });
+    const simDir = join(dataDir(), 'sim');
+    pruneOldCooks(simDir, 5);
+    hub = new Hub({ cfg, source, clock, dataDir: simDir, freshCook: true });
   } else {
     const { BleSource } = await import('./devices/ble.ts');
     hub = new Hub({ cfg, source: new BleSource(cfg), dataDir: dataDir() });

@@ -74,6 +74,7 @@ export class Hub extends EventEmitter implements SourceSink {
   private timer: NodeJS.Timeout | null = null;
   private lastAnalyses: ChannelAnalysis[] = [];
   private claudeLastCheckAt: number | null = null;
+  private claudeChecks: number[] = [];
 
   private freshCook: boolean;
 
@@ -197,11 +198,18 @@ export class Hub extends EventEmitter implements SourceSink {
 
   private claudeSilentRaised = false;
 
-  /** If Claude was checking in during a cook and then goes quiet, the loop probably died. */
+  /**
+   * If Claude was checking in on a schedule during a cook and then goes quiet, the loop probably
+   * died. Only armed once there's a regular rhythm (≥3 checks, typical gap ≤ 15 min), so a one-off
+   * question from the Claude desktop app doesn't count as "monitoring".
+   */
   private checkClaudeHeartbeat(now: number): void {
-    if (this.clock.speed !== 1 || this.claudeLastCheckAt == null) return;
+    if (this.clock.speed !== 1 || this.claudeLastCheckAt == null || this.claudeChecks.length < 3) return;
+    const gaps = this.claudeChecks.slice(1).map((t, i) => t - this.claudeChecks[i]).sort((a, b) => a - b);
+    const typical = gaps[gaps.length >> 1];
+    if (typical > 15 * 60_000) return;
     const cooking = this.store.meta.startedAt != null && this.store.meta.endedAt == null;
-    const silent = cooking && now - this.claudeLastCheckAt > 20 * 60_000;
+    const silent = cooking && now - this.claudeLastCheckAt > Math.max(20 * 60_000, 3 * typical);
     if (silent && !this.claudeSilentRaised) {
       this.claudeSilentRaised = true;
       this.raise({
@@ -242,7 +250,10 @@ export class Hub extends EventEmitter implements SourceSink {
   // ---- operations used by the HTTP API / MCP ------------------------------------------
 
   markClaudeCheck(): void {
-    this.claudeLastCheckAt = this.clock.now();
+    const now = this.clock.now();
+    // collapse bursts (a check-in that calls the report twice) into one
+    if (this.claudeLastCheckAt == null || now - this.claudeLastCheckAt > 60_000) this.claudeChecks = [...this.claudeChecks, now].slice(-6);
+    this.claudeLastCheckAt = now;
   }
 
   addNote(text: string, source: CookEvent['source'] = 'user', at?: number): CookEvent {

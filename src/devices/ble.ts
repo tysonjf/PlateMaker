@@ -16,12 +16,17 @@ export async function loadNoble(): Promise<Noble> {
   }
 }
 
-export async function waitForAdapter(noble: Noble, log: SourceSink['log'], timeoutMs = 20_000): Promise<void> {
+export async function waitForAdapter(noble: Noble, log: SourceSink['log'], timeoutMs = 60_000): Promise<void> {
   if (noble.state === 'poweredOn') return;
   await new Promise<void>((resolve, reject) => {
     const timer = setTimeout(() => {
       noble.removeListener('stateChange', onState);
-      reject(new Error(`Bluetooth adapter not ready (state: ${noble.state}). Is Bluetooth turned on?`));
+      reject(
+        new Error(
+          `Bluetooth not ready (state: ${noble.state}). Is Bluetooth on, and did you allow your terminal to use it? ` +
+            '(System Settings → Privacy & Security → Bluetooth)',
+        ),
+      );
     }, timeoutMs);
     const onState = (state: string) => {
       if (state === 'poweredOn') {
@@ -108,14 +113,16 @@ export class BleSource implements DeviceSource {
   private tracked = new Map<string, Tracked>();
   private hintTimer: NodeJS.Timeout | null = null;
   private stopped = false;
+  private load: () => Promise<Noble>;
 
-  constructor(cfg: Config) {
+  constructor(cfg: Config, load: () => Promise<Noble> = loadNoble) {
     this.cfg = cfg;
+    this.load = load;
   }
 
   async start(sink: SourceSink): Promise<void> {
     this.sink = sink;
-    const noble = (this.noble = await loadNoble());
+    const noble = (this.noble = await this.load());
     sink.log('info', 'Waiting for Bluetooth… (macOS may ask to allow Bluetooth for your terminal the first time)');
     await waitForAdapter(noble, sink.log);
     noble.on('discover', (p: Peripheral) => this.onDiscover(p));
@@ -217,7 +224,7 @@ export class BleSource implements DeviceSource {
       const link = makeLink(characteristics);
       t.phase = 'connected';
       this.update(t, { connected: true, state: 'handshake' });
-      t.session = await driver.run(
+      const session = await driver.run(
         link,
         {
           log: (level, msg) => sink.log(level, msg),
@@ -234,6 +241,12 @@ export class BleSource implements DeviceSource {
         },
         model,
       );
+      if (t.phase !== 'connected' || p.state !== 'connected') {
+        // The base dropped us while the handshake was still running; don't leave its timers behind.
+        session.stop();
+        return;
+      }
+      t.session = session;
       t.failures = 0;
     } catch (err) {
       t.failures++;

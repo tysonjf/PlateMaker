@@ -52,8 +52,9 @@ must stay outside the meat.
    
    Temperatures are in the user's unit, shown in every report. These targets arm the hub's
    own alarms.
-4. **Schedule check-ins.** Call `CronCreate` with `cron: "*/5 * * * *"`, `recurring: true`, and
-   exactly this prompt:
+4. **Schedule check-ins.** Call `CronCreate` with `cron: "2-59/5 * * * *"` (every 5 minutes,
+   off the :00/:30 marks; use `"*/5 * * * *"` if that's rejected), `recurring: true`, and exactly
+   this prompt:
    > Smoke Signal check-in: call get_cook_report (detail auto). All fine → one short line. Needs action → lead with exactly what to do and why (2–4 sentences), then send_alert, plus PushNotification if available. Don't repeat earlier advice unless it changed or got worse. Guidance: .claude/skills/pitmaster/references/.
    
    If `CronCreate` isn't available (e.g. Claude Desktop chat), say that you can't poll on your
