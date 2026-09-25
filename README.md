@@ -8,6 +8,8 @@
 - When the fire is dying, the pit is running hot, the brisket has hit the stall or it's time to pull the meat, Claude tells you exactly what to do and buzzes your phone.
 - You can chat with it from the Claude app on your phone.
 
+![Smoke Signal dashboard during a simulated brisket cook](docs/dashboard.png)
+
 ```mermaid
 flowchart LR
   T["Inkbird INT-12-BW<br/>base + black & white probes"] -- Bluetooth --> H
