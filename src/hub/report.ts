@@ -1,7 +1,7 @@
 // The compact, pre-digested text Claude reads on every check-in. Keep it short: a 12-hour cook
 // with a check every 5 minutes means ~150 of these in one conversation.
 
-import type { ChannelAnalysis } from './analytics.ts';
+import { STALL_LOW_C, type ChannelAnalysis } from './analytics.ts';
 import type { HubSnapshot } from './hub.ts';
 import type { CookEvent } from './store.ts';
 import { fmtDiff, fmtDuration, fmtRate, fmtTemp, fmtWeight, deltaToUnit, type Unit } from '../units.ts';
@@ -40,8 +40,18 @@ export function attentionFlags(s: HubSnapshot): Flag[] {
     }
   }
   for (const p of pits) {
+    const alarmed = s.activeAlarms.some((e) => e.channelId === p.id);
+    if (p.current != null && !alarmed && (p.rangeStatus === 'low' || p.rangeStatus === 'high')) {
+      const dip = (p.dips ?? []).find((d) => now - d.at < 15 * MIN);
+      flags.push({
+        level: 'WATCH',
+        text:
+          `Pit ${p.rangeStatus === 'low' ? 'below' : 'above'} range: ${t(p.current)} for ${fmtDuration((p.outOfRangeMin ?? 0) * MIN)}` +
+          (dip ? ` (sharp ${fmtDiff(dip.dropC, unit)} dip at ${clock(dip.at)}: lid opened? — should recover within ~15 min)` : ' (hub alarms after 10 min low / 5 min high)'),
+      });
+    }
     if (p.current == null || p.rate15 == null || p.rangeStatus !== 'ok') continue;
-    if (s.activeAlarms.some((e) => e.channelId === p.id)) continue; // the alarm already says it
+    if (alarmed) continue; // the alarm already says it
     if (p.lowC != null && p.rate15 < -8) {
       const mins = ((p.current - p.lowC) / -p.rate15) * 60;
       if (mins < 25) flags.push({ level: 'WATCH', text: `Pit falling ${fmtRate(p.rate15, unit)}; at this rate it drops below ${t(p.lowC)} in ~${Math.max(1, Math.round(mins))} min` });
@@ -62,12 +72,25 @@ export function attentionFlags(s: HubSnapshot): Flag[] {
       flags.push({ level: 'WATCH', text: `${m.label} is ${fmtDiff(left, unit)} from target — start checking doneness soon` });
     }
     const eta = m.eta60Min ?? m.eta30Min;
-    if (cook.serveAt && eta != null && !m.stall && left > 0) {
+    // In (or crawling through) the stall a straight-line ETA is meaningless: use a conservative
+    // post-stall pace (~9°F / 5°C per hour) plus a 1h rest instead.
+    const crawling = m.current >= STALL_LOW_C && m.current <= 77 && (m.rate30 ?? 0) < 1.7;
+    if (cook.serveAt && left > 0 && (m.stall || crawling)) {
+      const neededMin = (left / 5) * 60 + 60;
+      const availMin = (cook.serveAt - now) / MIN;
+      if (availMin < neededMin + 30) {
+        const state = m.stall ? `stalled ${fmtDuration(m.stall.minutes * MIN)}` : `crawling (${fmtRate(m.rate30, unit)}) through the stall zone`;
+        flags.push({
+          level: 'WATCH',
+          text: `${m.label} ${state} with ${fmtDuration(availMin * MIN)} until serving at ${dayClock(cook.serveAt, now)}; at a typical post-stall ~${fmtDiff(5, unit)}/hr it needs ~${fmtDuration(neededMin * MIN)} incl. 1h rest. Wrapping and/or raising the pit is the lever.`,
+        });
+      }
+    } else if (cook.serveAt && eta != null && left > 0) {
       const done = now + eta * MIN;
       if (done > cook.serveAt) {
-        flags.push({ level: 'WATCH', text: `${m.label} projected done ~${clock(done)} (straight-line), after the ${clock(cook.serveAt)} serve time` });
+        flags.push({ level: 'WATCH', text: `${m.label} projected done ~${dayClock(done, now)} (straight-line), after the ${dayClock(cook.serveAt, now)} serve time` });
       } else if (done > cook.serveAt - 60 * MIN) {
-        flags.push({ level: 'WATCH', text: `${m.label} projected done ~${clock(done)}, leaving under 1h to rest before serving at ${clock(cook.serveAt)}` });
+        flags.push({ level: 'WATCH', text: `${m.label} projected done ~${dayClock(done, now)}, leaving under 1h to rest before serving at ${dayClock(cook.serveAt, now)}` });
       }
     }
   }
@@ -95,7 +118,7 @@ function channelLine(a: ChannelAnalysis, unit: Unit, now: number): string {
       parts.push(`range ${t(a.lowC)}–${t(a.highC)} ${st}`.trim());
     } else parts.push('no range set');
     if (a.stats10) parts.push(`10m avg ${t(a.stats10.mean)} ±${Math.round(deltaToUnit(a.stats10.std, unit))} (min ${t(a.stats10.min)}, max ${t(a.stats10.max)})`);
-    parts.push(`trend ${fmtRate(a.rate15, unit)} (15m), ${fmtRate(a.rate60, unit)} (60m)`);
+    parts.push(`trend ${fmtRate(a.rate30, unit)} (30m), ${fmtRate(a.rate15, unit)} (15m), ${fmtRate(a.rate60, unit)} (60m)`);
     const dips = (a.dips ?? []).filter((d) => now - d.at < 30 * MIN);
     if (dips.length) parts.push(`dips: ${dips.map((d) => `${clock(d.at)} −${fmtDiff(d.dropC, unit)}${d.recovered ? ' (recovered)' : ''}`).join(', ')}`);
   } else {
@@ -110,7 +133,7 @@ function channelLine(a: ChannelAnalysis, unit: Unit, now: number): string {
       const e60 = a.eta60Min;
       if (a.stall) parts.push('ETA: unreliable during stall');
       else if (e30 != null || e60 != null) {
-        const txt = [e30 != null ? `~${clock(now + e30 * MIN)} at 30m rate` : null, e60 != null ? `~${clock(now + e60 * MIN)} at 60m rate` : null]
+        const txt = [e30 != null ? `~${dayClock(now + e30 * MIN, now)} at 30m rate` : null, e60 != null ? `~${dayClock(now + e60 * MIN, now)} at 60m rate` : null]
           .filter(Boolean)
           .join(', ');
         parts.push(`ETA ${txt} (straight-line; ignores stall/wrap effects)`);
@@ -139,7 +162,7 @@ function briefChannel(a: ChannelAnalysis, unit: Unit, now: number): string {
   }
   const bits = [`30m ${fmtRate(a.rate30, unit)}`];
   if (a.stall) bits.push(`STALL ${fmtDuration(a.stall.minutes * MIN)}`);
-  else if (a.targetC != null && a.current < a.targetC && (a.eta60Min ?? a.eta30Min) != null) bits.push(`ETA ~${clock(now + (a.eta60Min ?? a.eta30Min)! * MIN)}`);
+  else if (a.targetC != null && a.current < a.targetC && (a.eta60Min ?? a.eta30Min) != null) bits.push(`ETA ~${dayClock(now + (a.eta60Min ?? a.eta30Min)! * MIN, now)}`);
   if (a.targetC != null && a.current >= a.targetC) bits.push('TARGET REACHED');
   return `${a.label} ${a.id} ${t(a.current)}${a.targetC != null ? `→${t(a.targetC)}` : ''} (${bits.join('; ')})`;
 }

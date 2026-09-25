@@ -159,7 +159,7 @@ export function detectStall(pts: Point[], now: number): Stall | null {
   if (rate45 == null || rate45 > 1.5 || rate45 < -2.5) return null;
   const b = bucketize(pts, 5 * MIN);
   let i = b.length - 1;
-  while (i > 0 && Math.abs(b[i - 1].v - cur) <= 4) i--;
+  while (i > 0 && Math.abs(b[i - 1].v - cur) <= 3) i--;
   const since = b[i].t;
   const minutes = (now - since) / MIN;
   if (minutes < 40) return null;
@@ -183,6 +183,8 @@ export interface Dip {
   endAt: number | null;
   dropC: number;
   recovered: boolean;
+  /** The bottom is behind us (readings have started climbing), so dropC is final. */
+  bottomed: boolean;
 }
 
 /**
@@ -218,7 +220,8 @@ export function findDips(pts: Point[], now: number, lookbackMin = 60): Dip[] {
         break;
       }
     }
-    dips.push({ at: b[peak].t, lowAt: b[low].t, endAt, dropC: b[peak].v - b[low].v, recovered: endAt != null });
+    const bottomed = b.at(-1)!.v > b[low].v + 2;
+    dips.push({ at: b[peak].t, lowAt: b[low].t, endAt, dropC: b[peak].v - b[low].v, recovered: endAt != null, bottomed });
     i = low;
   }
   return dips;

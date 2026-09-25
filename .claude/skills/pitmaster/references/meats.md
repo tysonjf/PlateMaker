@@ -21,9 +21,9 @@ early and hold**. The pull temperature is a guide; for barbecue cuts, **tenderne
 
 | Cut | Pit | Pull at | Doneness test | Typical time | Stall / wrap | Rest |
 |---|---|---|---|---|---|---|
-| Brisket, whole packer (12–18 lb) | 225–275°F (107–135°C), 250°F common | 200–205°F (93–96°C) in the flat | Probe slides in like soft butter all over the flat; the flat jiggles | 1–1.5 h/lb at 250°F; 10–16 h | Stalls around 150–170°F for 2–6 h. Wrap at 165–175°F once the bark is set (paper keeps bark, foil is fastest) | At least 1 h; 2–4 h is better. Hold in a dry cooler or a 150–170°F oven |
+| Brisket, whole packer (12–18 lb) | 225–275°F (107–135°C), 250°F common | 200–205°F (93–96°C) in the flat | Probe slides in like soft butter all over the flat; the flat jiggles | About 1 h/lb at 250°F unwrapped (a 14 lb packer is typically 12–15 h); about 0.75 h/lb at 275°F or when wrapped | Stalls around 150–170°F for 2–6 h. Wrap once the bark is set, usually 160–175°F; wrap earlier if behind schedule. Paper keeps bark; foil is fastest | At least 1 h; 2–4 h is better. Hold in a dry cooler or a 150–170°F oven |
 | Brisket flat only (5–8 lb) | 250–275°F | 200–203°F | Probe-tender | 6–9 h | Same stall; wrap to protect a lean flat | 1 h+ |
-| Pork shoulder / butt, bone-in (7–10 lb) | 225–275°F | 195–205°F to pull; 185–190°F to slice | Bone wiggles free; probe-tender | 1.5–2 h/lb at 225°F; 1–1.25 h/lb at 275°F | Stalls around 150–170°F. Wrap at ~165°F if short on time | 1 h+, then pull |
+| Pork shoulder / butt, bone-in (7–10 lb) | 225–275°F | 195–205°F to pull; 185–190°F to slice | Bone wiggles free; probe-tender | 1.5–2 h/lb at 225°F; about 1–1.25 h/lb at 275°F (an 8 lb butt is typically 9–12 h at 250°F) | Stalls around 150–170°F. Wrap once the bark is set if short on time | 1 h+, then pull |
 | Beef plate / chuck short ribs | 250–275°F | 200–210°F | Probe-tender between the bones | 6–9 h | Often not wrapped; the stall is shorter | 30–60 min |
 | Chuck roast ("poor man's brisket") | 250–275°F | 200–205°F to pull | Probe-tender | 6–8 h | Wrap in foil with a splash of liquid at ~165°F | 30–60 min |
 | Pork spare ribs | 225–275°F | ~195–203°F between the bones | Bend test: the rack sags and the bark cracks; a toothpick slides in easily | 5–6 h at 250°F (3-2-1 at 225°F) | Optional foil wrap at about half-time | 10–15 min |
@@ -51,7 +51,7 @@ Hot-and-fast cooks carry over more.
 | Leg of lamb | 250–325°F | 125–130°F | 135°F | Or 145°F for medium |
 | Pork loin | 225–275°F | 138–140°F | 145°F | Lean; brine it; don't overshoot |
 | Pork tenderloin | 250–350°F | 140°F | 145°F | Fast, 45–75 min |
-| Whole chicken | 275–350°F (hotter gives crispier skin) | breast 160°F, thigh 175°F+ | breast 165°F | 1.5–2.5 h at 300°F. Spatchcocking cooks it evenly |
+| Whole chicken | 275–350°F (hotter gives crispier skin) | breast 160°F, thigh 175°F+ | breast 165°F (carryover during the rest takes it there) | 1.5–2.5 h at 300°F. Spatchcocking cooks it evenly |
 | Chicken thighs / legs | 275–350°F | 175–190°F | — | Dark meat is better well past 165°F, as collagen renders |
 | Chicken wings | 275–350°F | 175–190°F | — | Finish hot for crisp skin |
 | Turkey, whole (12–14 lb) | 275–325°F (not 225°F: too slow) | breast 160°F, thigh 175°F | breast 165°F | About 12–15 min per lb at 325°F. Brining helps; spatchcocking is faster |

@@ -61,6 +61,9 @@ const fmtRate = (r) => {
   return `${v > 0 ? '+' : v < 0 ? '−' : '±'}${Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0)}°/hr`;
 };
 const clock = (t) => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+/** Adds the weekday when `t` isn't on the same day as `ref` (e.g. an ETA tomorrow morning). */
+const dayClock = (t, ref) =>
+  new Date(t).toDateString() === new Date(ref).toDateString() ? clock(t) : `${new Date(t).toLocaleDateString([], { weekday: 'short' })} ${clock(t)}`;
 const dur = (ms) => {
   let m = Math.max(0, Math.round(ms / MIN));
   const h = Math.floor(m / 60);
@@ -168,7 +171,7 @@ function renderHeader() {
   if (c.startedAt) bits.push(`${c.name} · ${dur((c.endedAt ?? s.now) - c.startedAt)}${c.endedAt ? ' · finished' : ''}`);
   else bits.push('No cook started — set one up below or ask Claude');
   if (c.meat) bits.push(c.meat);
-  if (c.serveAt) bits.push(`serve ${clock(c.serveAt)}`);
+  if (c.serveAt) bits.push(`serve ${dayClock(c.serveAt, s.now)}`);
   $('#cook-line').textContent = bits.join(' · ');
   const mode = $('#mode-chip');
   mode.hidden = s.mode !== 'sim';
@@ -222,7 +225,7 @@ function renderTiles() {
       subs.push(`${fmtRate(a.rate30)} over 30 min`);
       const eta = a.eta60Min ?? a.eta30Min;
       if (a.stall) badges.push(badge('warning', `Stall ${dur(a.stall.minutes * MIN)}`));
-      else if (eta != null && a.targetC != null && a.current < a.targetC) subs.push(`ETA ~${clock(s.now + eta * MIN)} (straight-line)`);
+      else if (eta != null && a.targetC != null && a.current < a.targetC) subs.push(`ETA ~${dayClock(s.now + eta * MIN, s.now)} (straight-line)`);
     }
     return el(
       'article',

@@ -334,7 +334,7 @@ export class AlarmEngine {
       if (a.role === 'pit') {
         for (const d of a.dips ?? []) {
           // Only fresh dips, and each dip once even as the analysis window slides over it.
-          if (input.now - d.lowAt > 15 * MIN || this.reportedDips.some((t) => Math.abs(t - d.lowAt) < 5 * MIN)) continue;
+          if (!d.bottomed || input.now - d.lowAt > 15 * MIN || this.reportedDips.some((t) => Math.abs(t - d.lowAt) < 5 * MIN)) continue;
           this.reportedDips.push(d.lowAt);
           once('lid_open', a.id, String(d.lowAt), {
             severity: 'info',

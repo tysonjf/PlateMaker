@@ -15,9 +15,11 @@ const VERSION = '0.1.0';
 const INSTRUCTIONS = `Smoke Signal connects you to the user's Bluetooth BBQ thermometers via a hub running on their Mac.
 Typical Inkbird INT-12-BW channels: A1 = black probe tip (meat), A2 = black probe ambient (pit/smoker air temperature), A3 = white probe tip (meat). Channel ids, labels and roles are shown in every report.
 - get_cook_report is the check-in tool: current temps, rate of rise, stall detection, ETA, pit stability, alarms and events since your last check, pre-computed.
-- When the user wants their cook monitored, set it up with start_cook (targets + pit range), then check in every 5–10 minutes (in Claude Code: /loop). Keep all-clear check-ins to one short line; when the user must act, say exactly what to do and call send_alert so their phone/Mac buzzes.
-- Record what the user tells you they did (wrapped, spritzed, added fuel, opened lid…) with log_event; it explains curve changes later.
-- If the pitmaster skill is available, follow it for the detailed check-in protocol and BBQ guidance.`;
+- When the user wants their cook monitored, set it up with start_cook (targets + pit range), then check in every 5 minutes (in Claude Code: CronCreate or /loop).
+- Check-ins: OK → one short line (time · pit · each meat + trend). WATCH → 1–2 lines naming the threshold that would make you act. ACT (user must act within ~15 min) → lead with the exact action and why, then send_alert (warning; critical only when it can't wait: fire nearly out, pit far too hot, meat at target, food safety) and PushNotification if you have it.
+- Re-alert the same issue only when it crosses a new threshold or hasn't improved after ~20 minutes; never every check-in.
+- Record what the user tells you they did (wrapped, spritzed, added fuel, raised the pit…) with log_event; if they change the pit set point, move the pit range with update_cook so the hub's alarms follow.
+- If the pitmaster skill is available, follow it for the detailed protocol and BBQ guidance.`;
 
 class HubDown extends Error {}
 
@@ -257,11 +259,14 @@ export async function runMcpServer(opts: { channel: boolean }): Promise<void> {
     {
       title: 'Alert the user',
       description:
-        "Buzz the user: macOS notification with sound on the Mac, a push to their phone if they set up ntfy, and an entry on the dashboard. Use when they need to act soon (fire dying, pit way off, meat nearly done, probe problem). Don't use for routine all-good updates. Title ≤ 60 chars; message = the concrete action.",
+        "Alert the user through the hub: macOS notification with sound on the Mac, a phone push via ntfy if they configured it, and an entry on the dashboard/cook log. (To reach the Claude mobile app use your PushNotification tool as well.) Use when they need to act soon (fire dying, pit way off, meat nearly done, probe problem); not for routine all-good updates. Title ≤ 60 chars; message = the concrete action.",
       inputSchema: {
         title: z.string().min(1).max(120),
         message: z.string().max(1000),
-        severity: z.enum(['info', 'warning', 'critical']).optional().describe('critical = act now; warning = within ~15 min; info = heads-up'),
+        severity: z
+          .enum(['info', 'warning', 'critical'])
+          .optional()
+          .describe('warning (default) = act within ~15 min; critical = act NOW (urgent phone push, spoken aloud on the Mac if enabled) — fire nearly out, pit far too hot, meat at target; info = heads-up'),
       },
     },
     guard(async ({ title, message, severity = 'warning' }: { title: string; message: string; severity?: 'info' | 'warning' | 'critical' }) => {

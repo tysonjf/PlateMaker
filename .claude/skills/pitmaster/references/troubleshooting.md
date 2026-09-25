@@ -27,7 +27,7 @@ Check in this order:
 
    | Cooker | Most likely cause | Fix |
    |---|---|---|
-   | Offset / stick burner | The fire is burning down between splits | Add one or two pre-warmed splits; keep a bright, clean fire. Rake the coals together and clear ash from under the grate |
+   | Offset / stick burner | The fire is burning down between splits | First rake the coals together and clear ash from under the grate. **Healthy coal bed:** add one or two pre-warmed splits. **Coals burned low:** don't smother them with big wood. It smoulders, makes bitter smoke, and the pit keeps falling. Add a small split or kindling (or a few lit coals from a chimney), open the intake or crack the firebox door until it flames, then add a normal split and settle the vents |
    | Charcoal (kettle, WSM, UDS) | The lit coals are running out, or ash is choking the fire | Open the bottom intake more (keep the top vent at least half open). Stir or knock the ash through. Add lit coals from a chimney if the fire has burned down |
    | Kamado | Too little air | Open the bottom vent a little, wait 10–15 min, then adjust again. Kamados respond slowly, so small moves |
    | Pellet grill | The hopper is empty or the pellets have bridged/tunnelled, starving the auger | Check and stir the hopper. If the temperature keeps falling toward ambient, the fire may have gone out: follow the grill's shutdown and restart procedure. Never restart with a pile of unburned pellets in the fire pot, as it can flare dangerously |

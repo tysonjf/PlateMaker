@@ -353,7 +353,17 @@ export class Hub extends EventEmitter implements SourceSink {
   }
 
   private withStatus(list: ChannelAnalysis[]): ChannelAnalysis[] {
-    for (const a of list) a.sensorStatus = this.sensorStatus.get(a.id);
+    const now = this.clock.now();
+    for (const a of list) {
+      a.sensorStatus = this.sensorStatus.get(a.id);
+      if (a.stall) {
+        // Once a stall is announced, keep reporting the start we announced, so it doesn't drift.
+        const ev = this.store.events.findLast((e) => e.code === 'stall' && e.channelId === a.id && e.ref != null);
+        if (ev && Math.abs(ev.ref! - a.stall.since) < 2 * 3600_000) {
+          a.stall = { ...a.stall, since: ev.ref!, minutes: (now - ev.ref!) / 60_000 };
+        }
+      }
+    }
     return list;
   }
 
