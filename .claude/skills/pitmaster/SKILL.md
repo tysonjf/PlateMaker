@@ -48,7 +48,8 @@ must stay outside the meat.
 3. Call `start_cook`:
    - name, meat, weight, method, and serve_at when you know it
    - probes: a label and target per meat channel
-   - `pit_low`/`pit_high`: a band around their pit target, typically set point −15°F / +25°F
+   - `pit_low`/`pit_high`: a band around their pit target, typically 15°F (8°C) below to
+     25°F (14°C) above the set point
    
    Temperatures are in the user's unit, shown in every report. These targets arm the hub's
    own alarms.
