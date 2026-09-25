@@ -48,7 +48,7 @@ Your original idea (a Bluetooth CLI plus a Claude skill that polls every few min
 ## Quick start
 
 ```bash
-git clone https://github.com/tysonjf/PlateMaker.git smoke-signal
+git clone https://github.com/tysonjf/Smoke-Signal-Cooking-Guide.git smoke-signal
 cd smoke-signal
 pnpm install
 pnpm demo          # simulator, one cook-hour per real minute — open http://localhost:7474
